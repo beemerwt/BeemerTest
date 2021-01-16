@@ -18,8 +18,8 @@ export default class Page {
 
     render(html: JQuery<HTMLDivElement>) {
         this.preRender();
-        html.empty();
-        html.append(this.html);
+        //html.empty();
+        html.html(this.html);
         this.postRender();
     }
 }

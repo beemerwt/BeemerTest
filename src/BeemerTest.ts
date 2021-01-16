@@ -1,36 +1,49 @@
+import QuestionPage from './pages/QuestionPage';
+import ResultsPage from './pages/ResultsPage';
 import WelcomePage from './pages/WelcomePage';
 import Paginator from './Paginator';
+import { QuestionType } from './Question';
+import QuestionPaginator from './QuestionPaginator';
 
 export default class BeemerTest {
     private html: JQuery<HTMLDivElement>;
 
-    private identity: Paginator = new Paginator();
-    private past: Paginator = new Paginator();
-    private career: Paginator = new Paginator();
-    private sexlife: Paginator = new Paginator();
-    private future: Paginator = new Paginator();
-    private hypothetical: Paginator = new Paginator();
-    private results: Paginator = new Paginator();
+    private identity: QuestionPaginator;
+    private past: QuestionPaginator;
+    private career: QuestionPaginator;
+    private sexlife: QuestionPaginator;
+    private future: QuestionPaginator;
+    private hypothetical: QuestionPaginator;
 
     private finished: boolean = false;
 
     private paginator: Paginator = new Paginator();
 
     constructor() {
-        this.html = $("body").append("<div class='beemer-test'></div>");
-        this.html.css({
-            'width': 800,
-            'height': 500,
-            'text-align': 'center',
-            'border': '1px solid black',
-            'padding': 10
-        });
+        $("body").append("<div class='beemer-test'></div>");
+        this.html = $("div.beemer-test");
+
+        this.identity = new QuestionPaginator("Identity");
+        this.past = new QuestionPaginator("Past");
+        this.career = new QuestionPaginator("Career");
+        this.sexlife = new QuestionPaginator("Sexlife");
+        this.future = new QuestionPaginator("Future");
+        this.hypothetical = new QuestionPaginator("Hypothetical");
+
+        this.addIdentityPages();
 
         this.paginator.renderPage(this.html, new WelcomePage().onBeginClicked(() => {
             this.paginator = this.identity;
-            console.log("This is a test callback!");
             this.paginator.render(this.html);
         }));
+    }
+
+    addIdentityPages() {
+        const pages = [
+            new QuestionPage("Test Question", QuestionType.YesNo)
+        ];
+        
+        this.identity.addPages(...pages);
     }
 
     nextCategory() {
@@ -44,18 +57,20 @@ export default class BeemerTest {
             this.paginator = this.future;
         else if (this.paginator == this.future)
             this.paginator = this.hypothetical;
-        else if (this.paginator == this.hypothetical) {
-            this.paginator = this.results;
-            this.finished = true;
-        }
+        else if (this.paginator == this.hypothetical)
+            this.paginator.renderPage(this.html, new ResultsPage(this.getResults()));
     }
 
     nextQuestion() {
-        if (this.paginator.finished()) {
+        if (this.paginator.finished() && !this.finished) {
             this.nextCategory();
             return;
         }
 
         this.paginator.nextPage();
+    }
+
+    getResults(): number {
+        return 0;
     }
 }
