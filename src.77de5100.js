@@ -429,8 +429,14 @@ function () {
     return this.index === this.pages.length - 1;
   };
 
+  Paginator.prototype.preRender = function (html) {};
+
+  Paginator.prototype.postRender = function (html) {};
+
   Paginator.prototype.render = function (html) {
+    this.preRender(html);
     this.pages[this.index].render(html);
+    this.postRender(html);
   };
 
   Paginator.prototype.renderPage = function (html, page) {
@@ -535,6 +541,8 @@ function (_super) {
       this.pages.push(page);
     }
   };
+
+  QuestionPaginator.prototype.postRender = function (html) {};
 
   return QuestionPaginator;
 }(Paginator_1.default);
@@ -662,7 +670,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57115" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60071" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
