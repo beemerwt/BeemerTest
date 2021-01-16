@@ -22,4 +22,8 @@ export default class QuestionPaginator extends Paginator {
             this.pages.push(page);
         }
     }
+
+    postRender(html: JQuery<HTMLDivElement>) {
+        
+    }
 }

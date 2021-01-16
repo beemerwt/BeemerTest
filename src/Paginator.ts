@@ -33,8 +33,13 @@ export default class Paginator {
         return this.index === this.pages.length - 1;
     }
 
+    preRender(html: JQuery<HTMLDivElement>) {}
+    postRender(html: JQuery<HTMLDivElement>) {}
+
     render(html: JQuery<HTMLDivElement>) {
+        this.preRender(html);
         this.pages[this.index].render(html);
+        this.postRender(html);
     }
 
     renderPage(html: JQuery<HTMLDivElement>, page: Page) {
