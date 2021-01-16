@@ -129,13 +129,104 @@ var Page =
 function () {
   function Page(name) {
     this.name = name;
+    this._html = "";
   }
+
+  Object.defineProperty(Page.prototype, "html", {
+    get: function get() {
+      return this._html;
+    },
+    set: function set(html) {
+      this._html = html;
+    },
+    enumerable: false,
+    configurable: true
+  });
+
+  Page.prototype.preRender = function () {};
+
+  Page.prototype.postRender = function () {};
+
+  Page.prototype.render = function (html) {
+    this.preRender();
+    html.empty();
+    html.append(this.html);
+    this.postRender();
+  };
 
   return Page;
 }();
 
 exports.default = Page;
-},{}],"Paginator.ts":[function(require,module,exports) {
+},{}],"pages/WelcomePage.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var Page_1 = __importDefault(require("../Page"));
+
+var WelcomePage =
+/** @class */
+function (_super) {
+  __extends(WelcomePage, _super);
+
+  function WelcomePage() {
+    var _this = _super.call(this, "Welcome") || this;
+
+    _this.html = "<h1>Welcome to the Beemer Test!</h1>\n        <p>Welcome! This test will measure the level of \"Beemer\" you are. You will be given a percentage result based on how similar you are to Beemer,\n        along with a short analysis of what it should mean to be around your resulting percentage.<br />Click the start button below to begin!</p>\n        <button id=\"startButton\">Start</button>";
+    return _this;
+  }
+
+  WelcomePage.prototype.onBeginClicked = function (callback) {
+    this.beginCallback = callback;
+    return this;
+  };
+
+  WelcomePage.prototype.preRender = function () {};
+
+  WelcomePage.prototype.postRender = function () {
+    $("button#startButton").on('click', this.beginCallback);
+  };
+
+  return WelcomePage;
+}(Page_1.default);
+
+exports.default = WelcomePage;
+},{"../Page":"Page.ts"}],"Paginator.ts":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -185,6 +276,12 @@ function () {
     return this.index === this.pages.length - 1;
   };
 
+  Paginator.prototype.render = function (html) {};
+
+  Paginator.prototype.renderPage = function (html, page) {
+    page.render(html);
+  };
+
   return Paginator;
 }();
 
@@ -202,12 +299,16 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var WelcomePage_1 = __importDefault(require("./pages/WelcomePage"));
+
 var Paginator_1 = __importDefault(require("./Paginator"));
 
 var BeemerTest =
 /** @class */
 function () {
   function BeemerTest() {
+    var _this = this;
+
     this.identity = new Paginator_1.default();
     this.past = new Paginator_1.default();
     this.career = new Paginator_1.default();
@@ -216,36 +317,44 @@ function () {
     this.hypothetical = new Paginator_1.default();
     this.results = new Paginator_1.default();
     this.finished = false;
-    this.iframe = $("iframe#beemer-test");
-    this.category = this.identity;
-    this.render();
+    this.paginator = new Paginator_1.default();
+    this.html = $("body").append("<div class='beemer-test'></div>");
+    this.html.css({
+      'width': 800,
+      'height': 500,
+      'text-align': 'center',
+      'border': '1px solid black',
+      'padding': 10
+    });
+    this.paginator.renderPage(this.html, new WelcomePage_1.default().onBeginClicked(function () {
+      _this.paginator = _this.identity;
+      console.log("This is a test callback!");
+
+      _this.paginator.render(_this.html);
+    }));
   }
 
   BeemerTest.prototype.nextCategory = function () {
-    if (this.category === this.identity) this.category = this.past;else if (this.category == this.past) this.category = this.career;else if (this.category == this.career) this.category = this.sexlife;else if (this.category == this.sexlife) this.category = this.future;else if (this.category == this.future) this.category = this.hypothetical;else if (this.category == this.hypothetical) {
-      this.category = this.results;
+    if (this.paginator === this.identity) this.paginator = this.past;else if (this.paginator == this.past) this.paginator = this.career;else if (this.paginator == this.career) this.paginator = this.sexlife;else if (this.paginator == this.sexlife) this.paginator = this.future;else if (this.paginator == this.future) this.paginator = this.hypothetical;else if (this.paginator == this.hypothetical) {
+      this.paginator = this.results;
       this.finished = true;
     }
   };
 
   BeemerTest.prototype.nextQuestion = function () {
-    if (this.category.finished()) {
+    if (this.paginator.finished()) {
       this.nextCategory();
       return;
     }
 
-    this.category.nextPage();
-  };
-
-  BeemerTest.prototype.render = function () {
-    var title = this.iframe.append("<p>TEST</p>");
+    this.paginator.nextPage();
   };
 
   return BeemerTest;
 }();
 
 exports.default = BeemerTest;
-},{"./Paginator":"Paginator.ts"}],"index.ts":[function(require,module,exports) {
+},{"./pages/WelcomePage":"pages/WelcomePage.ts","./Paginator":"Paginator.ts"}],"index.ts":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -260,18 +369,6 @@ Object.defineProperty(exports, "__esModule", {
 
 var BeemerTest_1 = __importDefault(require("./BeemerTest"));
 
-var QuestionType;
-
-(function (QuestionType) {
-  QuestionType[QuestionType["YesNo"] = 0] = "YesNo";
-  QuestionType[QuestionType["Scale"] = 1] = "Scale";
-  QuestionType[QuestionType["AgreeDisagree"] = 2] = "AgreeDisagree";
-  QuestionType[QuestionType["SelectAllThatApply"] = 3] = "SelectAllThatApply";
-  QuestionType[QuestionType["RankOrder"] = 4] = "RankOrder";
-  QuestionType[QuestionType["MultipleChoice"] = 5] = "MultipleChoice";
-})(QuestionType || (QuestionType = {}));
-
-;
 var test = new BeemerTest_1.default();
 },{"./BeemerTest":"BeemerTest.ts"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -301,7 +398,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52909" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53475" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

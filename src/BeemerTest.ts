@@ -1,7 +1,8 @@
+import WelcomePage from './pages/WelcomePage';
 import Paginator from './Paginator';
 
 export default class BeemerTest {
-    private iframe: JQuery<HTMLIFrameElement>;
+    private html: JQuery<HTMLDivElement>;
 
     private identity: Paginator = new Paginator();
     private past: Paginator = new Paginator();
@@ -13,42 +14,48 @@ export default class BeemerTest {
 
     private finished: boolean = false;
 
-    private category: Paginator;
+    private paginator: Paginator = new Paginator();
 
     constructor() {
-        this.iframe = $("iframe#beemer-test");
-        this.category = this.identity;
-        this.render();
+        this.html = $("body").append("<div class='beemer-test'></div>");
+        this.html.css({
+            'width': 800,
+            'height': 500,
+            'text-align': 'center',
+            'border': '1px solid black',
+            'padding': 10
+        });
+
+        this.paginator.renderPage(this.html, new WelcomePage().onBeginClicked(() => {
+            this.paginator = this.identity;
+            console.log("This is a test callback!");
+            this.paginator.render(this.html);
+        }));
     }
 
     nextCategory() {
-        if (this.category === this.identity)
-            this.category = this.past;
-        else if (this.category == this.past)
-            this.category = this.career;
-        else if (this.category == this.career)
-            this.category = this.sexlife;
-        else if (this.category == this.sexlife)
-            this.category = this.future;
-        else if (this.category == this.future)
-            this.category = this.hypothetical;
-        else if (this.category == this.hypothetical) {
-            this.category = this.results;
+        if (this.paginator === this.identity)
+            this.paginator = this.past;
+        else if (this.paginator == this.past)
+            this.paginator = this.career;
+        else if (this.paginator == this.career)
+            this.paginator = this.sexlife;
+        else if (this.paginator == this.sexlife)
+            this.paginator = this.future;
+        else if (this.paginator == this.future)
+            this.paginator = this.hypothetical;
+        else if (this.paginator == this.hypothetical) {
+            this.paginator = this.results;
             this.finished = true;
         }
     }
 
     nextQuestion() {
-
-        if (this.category.finished()) {
+        if (this.paginator.finished()) {
             this.nextCategory();
             return;
         }
 
-        this.category.nextPage();
-    }
-
-    render() {
-        const title = this.iframe.append("<p>TEST</p>");
+        this.paginator.nextPage();
     }
 }

@@ -2,9 +2,24 @@
 
 export default class Page {
 
-    private name: String;
+    name: string;
+    private _html: string;
 
-    constructor(name: String) {
+    constructor(name: string) {
         this.name = name;
+        this._html = "";
+    }
+
+    set html(html: string) { this._html = html; }
+    get html(): string { return this._html; }
+
+    preRender() {}
+    postRender() {}
+
+    render(html: JQuery<HTMLDivElement>) {
+        this.preRender();
+        html.empty();
+        html.append(this.html);
+        this.postRender();
     }
 }

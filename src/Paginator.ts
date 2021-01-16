@@ -25,4 +25,12 @@ export default class Paginator {
     finished() {
         return this.index === this.pages.length - 1;
     }
+
+    render(html: JQuery<HTMLDivElement>) {
+
+    }
+
+    renderPage(html: JQuery<HTMLDivElement>, page: Page) {
+        page.render(html);
+    }
 }
