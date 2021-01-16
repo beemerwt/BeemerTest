@@ -148,9 +148,9 @@ function () {
   Page.prototype.postRender = function () {};
 
   Page.prototype.render = function (html) {
-    this.preRender();
-    html.empty();
-    html.append(this.html);
+    this.preRender(); //html.empty();
+
+    html.html(this.html);
     this.postRender();
   };
 
@@ -158,7 +158,158 @@ function () {
 }();
 
 exports.default = Page;
-},{}],"pages/WelcomePage.ts":[function(require,module,exports) {
+},{}],"pages/QuestionPage.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var Page_1 = __importDefault(require("../Page"));
+
+var QuestionPage =
+/** @class */
+function (_super) {
+  __extends(QuestionPage, _super);
+
+  function QuestionPage(question, questionType) {
+    var _this = _super.call(this, "Question") || this;
+
+    _this._category = "";
+    _this._pageNumber = 0;
+    _this.type = questionType;
+    _this.question = question;
+    _this.html = "\n        <h1 class=\"questionCategory\"></h1>\n        <h2 class=\"questionNumber\"></h2>\n        <p>" + question + "</p>\n        <button class=\"previousQuestion\">Prev.</button>\n        <button class=\"skipQuestion\">Skip</button>";
+    return _this;
+  }
+
+  QuestionPage.prototype.updatePageName = function () {
+    this.name = this._category + " Question " + this._pageNumber;
+  };
+
+  QuestionPage.prototype.category = function (category) {
+    this._category = category;
+    this.updatePageName();
+    return this;
+  };
+
+  QuestionPage.prototype.number = function (pageNumber) {
+    this._pageNumber = pageNumber;
+    this.updatePageName();
+    return this;
+  };
+
+  QuestionPage.prototype.onNextQuestion = function (nextCallback) {
+    this.nextCallback = nextCallback;
+    return this;
+  };
+
+  QuestionPage.prototype.onPrevQuestion = function (prevCallback) {
+    this.prevCallback = prevCallback;
+    return this;
+  };
+
+  QuestionPage.prototype.postRender = function () {
+    $("h1.questionCategory").text(this._category);
+    $("h2.questionNumber").text("Question " + this._pageNumber);
+    $("button.skipQuestion").on('click', this.nextCallback);
+    $("button.prevQuestion").on('click', this.prevCallback);
+  };
+
+  return QuestionPage;
+}(Page_1.default);
+
+exports.default = QuestionPage;
+},{"../Page":"Page.ts"}],"pages/ResultsPage.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var Page_1 = __importDefault(require("../Page"));
+
+var ResultsPage =
+/** @class */
+function (_super) {
+  __extends(ResultsPage, _super);
+
+  function ResultsPage(results) {
+    var _this = _super.call(this, "Results") || this;
+
+    _this.results = results;
+    return _this;
+  }
+
+  return ResultsPage;
+}(Page_1.default);
+
+exports.default = ResultsPage;
+},{"../Page":"Page.ts"}],"pages/WelcomePage.ts":[function(require,module,exports) {
 "use strict";
 
 var __extends = this && this.__extends || function () {
@@ -260,23 +411,27 @@ function () {
 
     if (pages.length <= 0) throw "addPages cannot be called with 0 args";
     pages.forEach(function (page) {
-      if (typeof page === 'string') {
-        _this.pages.push(new Page_1.default(page));
-      } else {
-        _this.pages.push(page);
-      }
+      if (typeof page === 'string') _this.pages.push(new Page_1.default(page));else _this.pages.push(page);
     });
   };
 
   Paginator.prototype.nextPage = function () {
+    if (this.index === this.pages.length - 1) return;
     this.index = this.index + 1;
+  };
+
+  Paginator.prototype.prevPage = function () {
+    if (this.index === 0) return;
+    this.index = this.index - 1;
   };
 
   Paginator.prototype.finished = function () {
     return this.index === this.pages.length - 1;
   };
 
-  Paginator.prototype.render = function (html) {};
+  Paginator.prototype.render = function (html) {
+    this.pages[this.index].render(html);
+  };
 
   Paginator.prototype.renderPage = function (html, page) {
     page.render(html);
@@ -286,7 +441,106 @@ function () {
 }();
 
 exports.default = Paginator;
-},{"./Page":"Page.ts"}],"BeemerTest.ts":[function(require,module,exports) {
+},{"./Page":"Page.ts"}],"Question.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.QuestionType = void 0;
+var QuestionType;
+
+(function (QuestionType) {
+  QuestionType[QuestionType["YesNo"] = 0] = "YesNo";
+  QuestionType[QuestionType["Scale"] = 1] = "Scale";
+  QuestionType[QuestionType["AgreeDisagree"] = 2] = "AgreeDisagree";
+  QuestionType[QuestionType["SelectAllThatApply"] = 3] = "SelectAllThatApply";
+  QuestionType[QuestionType["RankOrder"] = 4] = "RankOrder";
+  QuestionType[QuestionType["MultipleChoice"] = 5] = "MultipleChoice";
+})(QuestionType = exports.QuestionType || (exports.QuestionType = {}));
+
+;
+},{}],"QuestionPaginator.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) {
+        if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+      }
+    };
+
+    return _extendStatics(d, b);
+  };
+
+  return function (d, b) {
+    _extendStatics(d, b);
+
+    function __() {
+      this.constructor = d;
+    }
+
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+
+var __importDefault = this && this.__importDefault || function (mod) {
+  return mod && mod.__esModule ? mod : {
+    "default": mod
+  };
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var Paginator_1 = __importDefault(require("./Paginator"));
+
+var QuestionPaginator =
+/** @class */
+function (_super) {
+  __extends(QuestionPaginator, _super);
+
+  function QuestionPaginator(category) {
+    var _this = _super.call(this) || this;
+
+    _this.category = category;
+    return _this;
+  }
+
+  QuestionPaginator.prototype.addPages = function () {
+    var _this = this;
+
+    var pages = [];
+
+    for (var _i = 0; _i < arguments.length; _i++) {
+      pages[_i] = arguments[_i];
+    }
+
+    if (pages.length <= 0) throw "addPages cannot be called with 0 args";
+
+    for (var i = 0; i < pages.length; i++) {
+      var page = pages[i].category(this.category).number(i + 1);
+      page.onNextQuestion(function () {
+        return _this.nextPage();
+      });
+      page.onPrevQuestion(function () {
+        return _this.prevPage();
+      });
+      this.pages.push(page);
+    }
+  };
+
+  return QuestionPaginator;
+}(Paginator_1.default);
+
+exports.default = QuestionPaginator;
+},{"./Paginator":"Paginator.ts"}],"BeemerTest.ts":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -299,9 +553,17 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var QuestionPage_1 = __importDefault(require("./pages/QuestionPage"));
+
+var ResultsPage_1 = __importDefault(require("./pages/ResultsPage"));
+
 var WelcomePage_1 = __importDefault(require("./pages/WelcomePage"));
 
 var Paginator_1 = __importDefault(require("./Paginator"));
+
+var Question_1 = require("./Question");
+
+var QuestionPaginator_1 = __importDefault(require("./QuestionPaginator"));
 
 var BeemerTest =
 /** @class */
@@ -309,40 +571,38 @@ function () {
   function BeemerTest() {
     var _this = this;
 
-    this.identity = new Paginator_1.default();
-    this.past = new Paginator_1.default();
-    this.career = new Paginator_1.default();
-    this.sexlife = new Paginator_1.default();
-    this.future = new Paginator_1.default();
-    this.hypothetical = new Paginator_1.default();
-    this.results = new Paginator_1.default();
     this.finished = false;
     this.paginator = new Paginator_1.default();
-    this.html = $("body").append("<div class='beemer-test'></div>");
-    this.html.css({
-      'width': 800,
-      'height': 500,
-      'text-align': 'center',
-      'border': '1px solid black',
-      'padding': 10
-    });
+    $("body").append("<div class='beemer-test'></div>");
+    this.html = $("div.beemer-test");
+    this.identity = new QuestionPaginator_1.default("Identity");
+    this.past = new QuestionPaginator_1.default("Past");
+    this.career = new QuestionPaginator_1.default("Career");
+    this.sexlife = new QuestionPaginator_1.default("Sexlife");
+    this.future = new QuestionPaginator_1.default("Future");
+    this.hypothetical = new QuestionPaginator_1.default("Hypothetical");
+    this.addIdentityPages();
     this.paginator.renderPage(this.html, new WelcomePage_1.default().onBeginClicked(function () {
       _this.paginator = _this.identity;
-      console.log("This is a test callback!");
 
       _this.paginator.render(_this.html);
     }));
   }
 
+  BeemerTest.prototype.addIdentityPages = function () {
+    var _a;
+
+    var pages = [new QuestionPage_1.default("Test Question", Question_1.QuestionType.YesNo)];
+
+    (_a = this.identity).addPages.apply(_a, pages);
+  };
+
   BeemerTest.prototype.nextCategory = function () {
-    if (this.paginator === this.identity) this.paginator = this.past;else if (this.paginator == this.past) this.paginator = this.career;else if (this.paginator == this.career) this.paginator = this.sexlife;else if (this.paginator == this.sexlife) this.paginator = this.future;else if (this.paginator == this.future) this.paginator = this.hypothetical;else if (this.paginator == this.hypothetical) {
-      this.paginator = this.results;
-      this.finished = true;
-    }
+    if (this.paginator === this.identity) this.paginator = this.past;else if (this.paginator == this.past) this.paginator = this.career;else if (this.paginator == this.career) this.paginator = this.sexlife;else if (this.paginator == this.sexlife) this.paginator = this.future;else if (this.paginator == this.future) this.paginator = this.hypothetical;else if (this.paginator == this.hypothetical) this.paginator.renderPage(this.html, new ResultsPage_1.default(this.getResults()));
   };
 
   BeemerTest.prototype.nextQuestion = function () {
-    if (this.paginator.finished()) {
+    if (this.paginator.finished() && !this.finished) {
       this.nextCategory();
       return;
     }
@@ -350,11 +610,15 @@ function () {
     this.paginator.nextPage();
   };
 
+  BeemerTest.prototype.getResults = function () {
+    return 0;
+  };
+
   return BeemerTest;
 }();
 
 exports.default = BeemerTest;
-},{"./pages/WelcomePage":"pages/WelcomePage.ts","./Paginator":"Paginator.ts"}],"index.ts":[function(require,module,exports) {
+},{"./pages/QuestionPage":"pages/QuestionPage.ts","./pages/ResultsPage":"pages/ResultsPage.ts","./pages/WelcomePage":"pages/WelcomePage.ts","./Paginator":"Paginator.ts","./Question":"Question.ts","./QuestionPaginator":"QuestionPaginator.ts"}],"index.ts":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -398,7 +662,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56417" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57115" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
